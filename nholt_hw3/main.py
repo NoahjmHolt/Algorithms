@@ -11,6 +11,7 @@ Pseudo code provided in pdf.
 from numpy import random
 import timeit
 
+
 # Knapsack Problem Solutions
 
 # exhaustive search
@@ -81,6 +82,7 @@ exhaustiveTime = round((exhaustiveEnd - exhaustiveStart) * 10 ** 6, 3)
 
 # For greedy, ordering list first
 OrderValues(values, weights)
+
 greedyStart = timeit.default_timer()
 greedyIndexes = Greedy(values, weights, maxWeigh)
 greedyEnd = timeit.default_timer()
