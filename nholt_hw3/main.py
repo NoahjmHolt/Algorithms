@@ -1,4 +1,4 @@
-'''
+"""
 
 Homework 3
 Noah Holt
@@ -6,10 +6,15 @@ Algorithms
 
 Pseudo code provided in pdf.
 
-'''
+"""
 
+import numpy
 from numpy import random
 import timeit
+# thanks to https://stackoverflow.com/questions/2512225/matplotlib-plots-not-showing-up-in-mac-osx
+import matplotlib
+matplotlib.use('TkAgg')
+import matplotlib.pyplot as plt
 
 
 # Knapsack Problem Solutions
@@ -17,7 +22,7 @@ import timeit
 # exhaustive search
 # This looks less like my pseudocode but many changes needed to be made
 # for this to properly work.
-def Exhaustive(val, weight, max):
+def Exhaustive(val, weight, maxW):
 
     allSubSets = []
     # get all subsets with bit manipulation
@@ -30,12 +35,15 @@ def Exhaustive(val, weight, max):
                 currentSubset.append(j)
         allSubSets.append(currentSubset)
 
-    # now we have all subsets so lets compare weights and values to get best
+    # now we have all subsets so let's compare weights and values to get best
     bestSet = []
     for test in allSubSets:
-        if len(bestSet) == 0: # if empty
+        # base case hae not ran yet
+        if len(bestSet) == 0:  # if empty
             bestSet = test
-        elif AddWeights(weight, test) > max:
+
+        # check weight limit then higher value
+        if AddWeights(weight, test) < maxW:
             if AddValues(val, test) > AddValues(val, bestSet):
                 bestSet = test
 
@@ -43,12 +51,12 @@ def Exhaustive(val, weight, max):
 
 
 # greedy bugger
-def Greedy(val, weight, max):
+def Greedy(val, weight, maxW):
 
     grabHighest = []
     for i in range(len(val)):
         grabHighest.append(i)
-        if AddWeights(weight, grabHighest) > max:
+        if AddWeights(weight, grabHighest) > maxW:
             grabHighest.pop()
 
     return grabHighest
@@ -93,22 +101,79 @@ def OrderValues(val, weight):
 
 # main function
 maxWeigh = 10000
-values = random.randint(100, size=3)
-weights = random.randint(low=1, high=10000, size=3)
 
-exhaustiveStart = timeit.default_timer()
+exhaustiveTimes = []
+exhaustiveWeights = []
+exhaustiveValues = []
 
-exhaustiveEnd = timeit.default_timer()
-exhaustiveTime = round((exhaustiveEnd - exhaustiveStart) * 10 ** 6, 3)
-# returned nano so with difference return seconds
+greedyTimes = []
+greedyWeights = []
+greedyValues = []
 
-# For greedy, ordering list first
-OrderValues(values, weights)
+for n in range(3, 16):
 
-greedyStart = timeit.default_timer()
-greedyIndexes = Greedy(values, weights, maxWeigh)
-greedyEnd = timeit.default_timer()
-greedyTime = round((greedyEnd - greedyStart) * 10 ** 6, 3)
+    exhaustiveNTimes = []
+    exhaustiveNWeights = []
+    exhaustiveNValues = []
 
-print(f"Greedy Time: {greedyTime} nano secs")
+    greedyNTimes = []
+    greedyNWeights = []
+    greedyNValues = []
+
+    for x in range(5):
+        values = random.randint(100, size=n)
+        weights = random.randint(low=1, high=10000, size=n)
+
+        exhaustiveStart = timeit.default_timer()
+        exhaustiveIndex = Exhaustive(values, weights, maxWeigh)
+        exhaustiveEnd = timeit.default_timer()
+        exhaustiveTime = round((exhaustiveEnd - exhaustiveStart) * 10 ** 6, 3)
+        # returned nano so with difference return seconds
+        exhaustiveNTimes.append(exhaustiveTime)
+        exhaustiveNValues.append(AddValues(values, exhaustiveIndex))
+        exhaustiveNWeights.append(AddWeights(weights, exhaustiveIndex))
+
+        # For greedy, ordering list first
+        OrderValues(values, weights)
+
+        greedyStart = timeit.default_timer()
+        greedyIndexes = Greedy(values, weights, maxWeigh)
+        greedyEnd = timeit.default_timer()
+        greedyTime = round((greedyEnd - greedyStart) * 10 ** 6, 3)
+
+        greedyNTimes.append(greedyTime)
+        greedyNValues.append(AddValues(values, greedyIndexes))
+        greedyNWeights.append(AddWeights(weights, greedyIndexes))
+
+    exhaustiveTimes.append(exhaustiveNTimes)
+    exhaustiveWeights.append(exhaustiveNWeights)
+    exhaustiveValues.append(exhaustiveNValues)
+
+    greedyTimes.append(greedyNTimes)
+    greedyWeights.append(greedyNWeights)
+    greedyValues.append(greedyNValues)
+
+
+# x = numpy.array(exhaustiveTimes[0])
+# y = numpy.array(greedyTimes[0])
+plt.xlabel("exhaustive")
+plt.ylabel("greedy")
+
+for n in range(len(exhaustiveTimes)):
+    plt.scatter(exhaustiveTimes[n], greedyTimes[n])
+    plt.title("Time Difference")
+
+plt.show()
+
+for n in range(len(exhaustiveValues)):
+    plt.scatter(exhaustiveValues[n], greedyValues[n])
+    plt.title("Value Difference")
+
+plt.show()
+
+for n in range(len(exhaustiveWeights)):
+    plt.scatter(exhaustiveWeights[n], greedyWeights[n])
+    plt.title("Weight Difference")
+
+plt.show()
 
