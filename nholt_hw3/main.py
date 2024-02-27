@@ -15,9 +15,31 @@ import timeit
 # Knapsack Problem Solutions
 
 # exhaustive search
+# This looks less like my pseudocode but many changes needed to be made
+# for this to properly work.
 def Exhaustive(val, weight, max):
 
-    return 0
+    allSubSets = []
+    # get all subsets with bit manipulation
+    for i in range(1 << len(val)):
+        currentSubset = []
+        # every element in val
+        for j in range(len(val)):
+            # check bits in subset
+            if (i & (1 << j)) != 0:
+                currentSubset.append(j)
+        allSubSets.append(currentSubset)
+
+    # now we have all subsets so lets compare weights and values to get best
+    bestSet = []
+    for test in allSubSets:
+        if len(bestSet) == 0: # if empty
+            bestSet = test
+        elif AddWeights(weight, test) > max:
+            if AddValues(val, test) > AddValues(val, bestSet):
+                bestSet = test
+
+    return bestSet
 
 
 # greedy bugger
@@ -71,8 +93,8 @@ def OrderValues(val, weight):
 
 # main function
 maxWeigh = 10000
-values = random.randint(100, size=10)
-weights = random.randint(low=1, high=10000, size=10)
+values = random.randint(100, size=3)
+weights = random.randint(low=1, high=10000, size=3)
 
 exhaustiveStart = timeit.default_timer()
 
